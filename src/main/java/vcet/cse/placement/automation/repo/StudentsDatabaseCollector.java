@@ -13,7 +13,8 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
     @Query("SELECT s FROM Students s WHERE " +
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(s.rollNo) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "CAST(s.universityNo AS string) LIKE CONCAT('%', :searchTerm, '%')")
+           "CAST(s.universityNo AS string) LIKE CONCAT('%', :searchTerm, '%') OR " +
+           "LOWER(s.leetcodeUsername) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<Students> searchStudents(@Param("searchTerm") String searchTerm);
 
     @Query("SELECT NEW map(s.name as name, " +

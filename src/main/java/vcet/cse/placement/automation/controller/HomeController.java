@@ -36,7 +36,7 @@ public class HomeController {
 
     // this method is used to post all the students data in a single short
 
-    @PostMapping
+    @PostMapping("/upload")
     public void createStudent(@RequestBody Students student) {
         studentsService.addStudents(student);
     }
@@ -58,26 +58,7 @@ public class HomeController {
 
 
 
-    @PutMapping("/{universityNo}/aptitude")
-    public void updateAptitudeScores(
-            @PathVariable Long universityNo,
-            @RequestBody Students aptiUpdate) {
-        studentsService.updateAptitudeScores(universityNo, aptiUpdate);
-    }
-
-    @PutMapping("/{universityNo}/technical")
-    public void updateTechnicalScores(
-            @PathVariable Long universityNo,
-            @RequestBody Students techUpdate) {
-        studentsService.updateTechAptitudeScores(universityNo, techUpdate);
-    }
-
-    @PutMapping("/{universityNo}/programming")
-    public void updateProgrammingScores(
-            @PathVariable Long universityNo,
-            @RequestBody Students progUpdate) {
-        studentsService.updateProgrammingScores(universityNo, progUpdate);
-    }
+ 
 
     // ... existing code ...
 
@@ -119,28 +100,12 @@ public class HomeController {
         return studentsService.getStudentLeetcodeData(universityNo);
     }
 
-    @GetMapping("/{universityNo}/aptitude")
-    public Map<String, Object> getAptitudeScores(@PathVariable Long universityNo) {
-        return studentsService.getStudentAptitudeData(universityNo);
-    }
+ 
 
-    @GetMapping("/{universityNo}/technical")
-    public Map<String, Object> getTechnicalScores(@PathVariable Long universityNo) {
-        return studentsService.getStudentTechnicalData(universityNo);
-    }
-
-    @GetMapping("/{universityNo}/programming")
-    public Map<String, Object> getProgrammingScores(@PathVariable Long universityNo) {
-        return studentsService.getStudentProgrammingData(universityNo);
-    }
-    @GetMapping("/analytics/eligibility")
-    public Map<String, Object> getEligibilityStats() {
-        return studentsService.getEligibility();
-    }
-    @GetMapping("/analytics/gender")
-    public Map<String, Object> getGenderDistribution() {
-        return studentsService.getGenderPerformanceScore();
-    }
+ 
+ 
+ 
+ 
     @GetMapping("/analytics/charts")
     public Map<String, Object> getChartData() {
         return studentsService.getChartData();
