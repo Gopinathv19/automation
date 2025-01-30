@@ -123,13 +123,13 @@ public class HomeController {
  
  
  
-    @GetMapping("/analytics/charts")
-    public Map<String, Object> getChartData() {
-        return studentsService.getChartData();
+    @GetMapping("/analytics/charts/{batch}")
+    public Map<String, Object> getChartData(@PathVariable int batch) {
+        return studentsService.getChartData(batch);
     }
-    @GetMapping("/analytics/toppers")
-    public List<Map<String, Object>> getToppers() {
-        return studentsService.getToppers();
+    @GetMapping("/analytics/toppers/{batch}")
+    public List<Map<String, Object>> getToppers(@PathVariable int batch) {
+        return studentsService.getToppers(batch);
     }
 
    // the search endpoint is also used in the admin page to search the students data
@@ -140,13 +140,13 @@ public class HomeController {
     }
  
 
-    @GetMapping("/students/scores/apptitude")
-    public List<Map<String, Object>> getAllStudentScores() {
-        return studentsService.getAllAptitudeScores();
+    @GetMapping("/students/scores/apptitude/{batch}")
+    public List<Map<String, Object>> getAllStudentScores(@PathVariable int batch) {
+        return studentsService.getAllAptitudeScores(batch);
     }
-    @GetMapping("/students/scores/leetcode")
-    public List<Map<String, Object>> getAllLeetcodeScores() {
-        return studentsService.getAllLeetcodeScores();
+    @GetMapping("/students/scores/leetcode/{batch}")
+    public List<Map<String, Object>> getAllLeetcodeScores(@PathVariable int batch   ) {
+        return studentsService.getAllLeetcodeScores(batch);
     }
 
  

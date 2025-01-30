@@ -1,15 +1,12 @@
 package vcet.cse.placement.automation.service;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import vcet.cse.placement.automation.Model.Students;
- 
+import vcet.cse.placement.automation.Model.StudentScores;
 import vcet.cse.placement.automation.repo.StudentsDatabaseCollector;
 import vcet.cse.placement.automation.exception.StudentNotFoundException;
-
 import java.util.*;
- 
-
+import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
@@ -117,7 +114,6 @@ public class StudentsService {
         existingStudent.setUniversityNo(studentUpdate.getUniversityNo());
         existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
         existingStudent.setBatch(studentUpdate.getBatch());
-        
         studentsDB.save(existingStudent);
     }
  
@@ -130,70 +126,101 @@ public class StudentsService {
             .orElseThrow(() -> new StudentNotFoundException(universityNo));
     }
 
- 
+
+    /* Method to get the chart data for the home profile page */
 
  
-
- 
-
- 
-
-    public Map<String, Object> getChartData() {
-        List<Students> allStudents = studentsDB.findAll();
+    public Map<String, Object> getChartData(int batch) {
+        List<Students> batchStudents = studentsDB.findAll().stream()
+            .filter(student -> student.getBatch() == batch)
+            .collect(Collectors.toList());
+        
         Map<String, Object> chartData = new HashMap<>();
         
-        // Calculate LeetCode difficulty distribution
-        int totalProblems = allStudents.stream()
-            .mapToInt(Students::getTotalProblemsSolved)
-            .sum();
+        // 1. Donut Chart Data - LeetCode Performance by Class
+        Map<String, Integer> classLeetcodeScores = batchStudents.stream()
+            .collect(Collectors.groupingBy(
+                Students::getClassName,
+                Collectors.summingInt(student -> 
+                    student.getEasyProblemsSolved() + 
+                    student.getMediumProblemsSolved() + 
+                    student.getHardProblemsSolved()
+                )
+            ));
         
+        // Convert to percentages for the donut chart
+        int totalProblems = classLeetcodeScores.values().stream().mapToInt(Integer::intValue).sum();
+        List<Integer> donutData = new ArrayList<>();
         if (totalProblems > 0) {
-            int totalEasy = allStudents.stream()
-                .mapToInt(Students::getEasyProblemsSolved)
-                .sum();
-            int totalMedium = allStudents.stream()
-                .mapToInt(Students::getMediumProblemsSolved)
-                .sum();
-            int totalHard = allStudents.stream()
-                .mapToInt(Students::getHardProblemsSolved)
-                .sum();
-                
-            List<Integer> donutData = Arrays.asList(
-                (totalEasy * 100) / totalProblems,
-                (totalMedium * 100) / totalProblems,
-                (totalHard * 100) / totalProblems
-            );
-            chartData.put("donutData", donutData);
+            donutData = classLeetcodeScores.values().stream()
+                .map(problems -> (problems * 100) / totalProblems)
+                .collect(Collectors.toList());
+        } else {
+            donutData = Arrays.asList(0, 0, 0); // For A, B, C sections
+        }
+        chartData.put("donutData", donutData);
+        
+        // 2. Bar Chart Data - Aptitude Performance by Class
+        Map<String, Double> classAptitudeScores = batchStudents.stream()
+            .collect(Collectors.groupingBy(
+                Students::getClassName,
+                Collectors.averagingDouble(student -> 
+                    student.getStudentScores().stream()
+                        .mapToDouble(StudentScores::getScore)
+                        .average()
+                        .orElse(0.0)
+                )
+            ));
+        
+        List<Double> barData = new ArrayList<>(classAptitudeScores.values());
+        chartData.put("barData", barData);
+        
+        // 3. Line Chart Data - Weekly Performance Trends
+        Map<String, List<Double>> lineData = new HashMap<>();
+        
+        // LeetCode weekly averages
+        List<Double> leetcodeScores = new ArrayList<>();
+        for (int week = 1; week <= 6; week++) {
+            double weekAvg = batchStudents.stream()
+                .mapToDouble(Students::getLeetcodeScore)
+                .average()
+                .orElse(0.0);
+            leetcodeScores.add(weekAvg);
         }
         
-        // Calculate class-wise performance
-        Map<String, List<Double>> classPerformance = new HashMap<>();
- 
-            
-        chartData.put("classPerformance", classPerformance);
-        
- 
-
-        Map<String, List<Double>> weeklyTrends = new HashMap<>();
-        List<Double> leetcodeScores = new ArrayList<>();
+        // Aptitude weekly averages
         List<Double> aptitudeScores = new ArrayList<>();
+        for (int week = 1; week <= 6; week++) {
+            double weekAvg = batchStudents.stream()
+                .flatMap(s -> s.getStudentScores().stream())
+                .mapToDouble(StudentScores::getScore)
+                .average()
+                .orElse(0.0);
+            aptitudeScores.add(weekAvg);
+        }
+        
+        // Overall weekly averages
         List<Double> overallScores = new ArrayList<>();
-
- 
-
-        weeklyTrends.put("leetcode", leetcodeScores);
-        weeklyTrends.put("aptitude", aptitudeScores);
-        weeklyTrends.put("overall", overallScores);
+        for (int i = 0; i < 6; i++) {
+            double overall = (leetcodeScores.get(i) + aptitudeScores.get(i)) / 2.0;
+            overallScores.add(overall);
+        }
         
-        // Add week labels
-        List<String> weekLabels = new ArrayList<>();
- 
+        lineData.put("leetcode", leetcodeScores);
+        lineData.put("aptitude", aptitudeScores);
+        lineData.put("overall", overallScores);
         
-        chartData.put("weeklyTrends", weeklyTrends);
-        chartData.put("weekLabels", weekLabels);
+        chartData.put("lineData", lineData);
         
         return chartData;
     }
+
+
+
+
+      /* function to get the student by the queryin using the params */
+
+
         public List<Students> searchStudents(String query) {
             if (query == null || query.trim().isEmpty()) {
                 return Collections.emptyList();
@@ -202,58 +229,46 @@ public class StudentsService {
 
         }
 
-        public ArrayList<Map<String, Object>> getToppers() {
-            List<Students> allStudents = studentsDB.findAll();
+     /* Method to get the toppers for the home page */
+
+        public ArrayList<Map<String, Object>> getToppers(int batch) {
             ArrayList<Map<String, Object>> toppers = new ArrayList<>();
             
             // Get LeetCode topper
-            Students leetcodeTopper = allStudents.stream()
-                .max(Comparator.comparing(Students::getLeetcodeScore))
-                .orElse(null);
-                
+            Students leetcodeTopper = studentsDB.findTopLeetcodeStudentByBatch(batch);
             if (leetcodeTopper != null) {
                 Map<String, Object> leetcodeTopperMap = new HashMap<>();
                 leetcodeTopperMap.put("name", leetcodeTopper.getName());
                 leetcodeTopperMap.put("title", "LeetCode Topper");
                 leetcodeTopperMap.put("univNo", leetcodeTopper.getUniversityNo());
+                leetcodeTopperMap.put("score", leetcodeTopper.getLeetcodeScore());
                 leetcodeTopperMap.put("greets", "Congratulations " + leetcodeTopper.getName());
                 toppers.add(leetcodeTopperMap);
             }
             
- 
- 
+            // Get Aptitude topper
+            Students aptitudeTopper = studentsDB.findTopAptitudeStudentByBatch(batch);
+            if (aptitudeTopper != null) {
+                Map<String, Object> aptitudeTopperMap = new HashMap<>();
+                aptitudeTopperMap.put("name", aptitudeTopper.getName());
+                aptitudeTopperMap.put("title", "Aptitude Topper");
+                aptitudeTopperMap.put("univNo", aptitudeTopper.getUniversityNo());
+                aptitudeTopperMap.put("score", studentsDB.getAverageAptitudeScore(aptitudeTopper.getUniversityNo()));
+                aptitudeTopperMap.put("greets", "Congratulations " + aptitudeTopper.getName());
+                toppers.add(aptitudeTopperMap);
+            }
             
             return toppers;
         }
 
-    public List<Map<String, Object>> getAllAptitudeScores() {
-        List<Map<String, Object>> scores = studentsDB.findAllAptitudeScores();
         
-        // Calculate total and average for each student
-        scores.forEach(score -> {
-            Double test1 = (Double) score.get("test1");
-            Double test2 = (Double) score.get("test2");
-            Double test3 = (Double) score.get("test3");
-            score.put("totalScore", test1 + test2 + test3);
-        });
-        
-        return scores;
+
+    public List<Map<String, Object>> getAllAptitudeScores(int batch) {
+        return studentsDB.findAllAptitudeScoresByBatch(batch);
     }
 
-    public List<Map<String, Object>> getAllLeetcodeScores() {
-        List<Map<String, Object>> scores = studentsDB.findAllLeetcodeScores();
-        
-        // Add percentage calculations
-        scores.forEach(score -> {
-            Integer easy = (Integer) score.get("easy");
-            Integer medium = (Integer) score.get("medium");
-            Integer hard = (Integer) score.get("hard");
-            score.put("easy",easy);
-            score.put("medium",medium);
-            score.put("hard",hard);
-        });
-        
-        return scores;
+    public List<Map<String, Object>> getAllLeetcodeScores(int batch) {
+        return studentsDB.findAllLeetcodeScoresByBatch(batch);
     }
 
     @Transactional
