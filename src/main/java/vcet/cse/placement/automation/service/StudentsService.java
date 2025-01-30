@@ -22,12 +22,14 @@ public class StudentsService {
     private StudentsDatabaseCollector studentsDB;
  
     /* Get all the students data from the data base */
+
     public List<Students> getStudents() {
         return studentsDB.findAll();
     }
 
  
     /* Add the particular student in the data base*/
+
     public void addStudents(Students students) {
         try{
             validateStudent(students);
@@ -39,6 +41,7 @@ public class StudentsService {
         studentsDB.save(students);
     }
     /* Add all the students send in to the request */
+
     public void addAllStudents(List<Students> students){
         List<String> errors = new ArrayList<>();
         int rowNum = 0;
@@ -63,6 +66,7 @@ public class StudentsService {
         studentsDB.saveAll(students);
     }
     /* Methos to validate the students data */
+
     private void validateStudent(Students student) {
         List<String> validationErrors = new ArrayList<>();
     
@@ -93,6 +97,7 @@ public class StudentsService {
  
  
     /* method to update the students data for a particular student */
+    
     public void updateStudentData(Long universityNo, Students studentUpdate) {
         Students existingStudent = studentsDB.findById(universityNo)
             .orElseThrow(() -> new StudentNotFoundException(universityNo));
@@ -234,7 +239,8 @@ public class StudentsService {
         public ArrayList<Map<String, Object>> getToppers(int batch) {
             ArrayList<Map<String, Object>> toppers = new ArrayList<>();
             
-            // Get LeetCode topper
+            /*Get the topper of the leetcode */
+
             Students leetcodeTopper = studentsDB.findTopLeetcodeStudentByBatch(batch);
             if (leetcodeTopper != null) {
                 Map<String, Object> leetcodeTopperMap = new HashMap<>();
@@ -246,7 +252,8 @@ public class StudentsService {
                 toppers.add(leetcodeTopperMap);
             }
             
-            // Get Aptitude topper
+            /* Get Aptitude topper */
+
             Students aptitudeTopper = studentsDB.findTopAptitudeStudentByBatch(batch);
             if (aptitudeTopper != null) {
                 Map<String, Object> aptitudeTopperMap = new HashMap<>();

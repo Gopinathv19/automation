@@ -1,5 +1,4 @@
 package vcet.cse.placement.automation.repo;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import vcet.cse.placement.automation.Model.Students;
 import java.util.List;
 import java.util.Map;
-
 @Repository
 public interface StudentsDatabaseCollector extends JpaRepository<Students, Long> {
     @Query("SELECT s FROM Students s WHERE " +
@@ -17,14 +15,7 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
            "LOWER(s.leetcodeUsername) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     List<Students> searchStudents(@Param("searchTerm") String searchTerm);
 
-    @Query("SELECT NEW map(s.name as name, " +
-           "s.universityNo as universityNo, " +
-           "s.aptiTest1Score as test1, " +
-           "s.aptiTest2Score as test2, " +
-           "s.aptiTest3Score as test3) " +
-           "FROM Students s " +
-           "ORDER BY (s.aptiTest1Score + s.aptiTest2Score + s.aptiTest3Score) DESC")
-    List<Map<String, Object>> findAllAptitudeScores();
+ 
 
     @Query("SELECT NEW map(s.name as name, " +
            "s.universityNo as universityNo, " +
@@ -41,8 +32,6 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
     @Query("SELECT s FROM Students s WHERE s.universityNo = :universityNo")
     Students findByUniversityNo(@Param("universityNo") Long universityNo);
 
-    @Query("SELECT s.className, AVG(s.leetcodeScore) FROM Students s WHERE s.batch = :batch GROUP BY s.className")
-    List<Object[]> findAverageLeetcodeScoresByClass(@Param("batch") int batch);
 
     @Query("SELECT s.className, AVG(sc.score) FROM Students s JOIN s.studentScores sc WHERE s.batch = :batch GROUP BY s.className")
     List<Object[]> findAverageAptitudeScoresByClass(@Param("batch") int batch);
