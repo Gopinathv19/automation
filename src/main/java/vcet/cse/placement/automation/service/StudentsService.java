@@ -18,125 +18,119 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @CrossOrigin
 @Service
 public class StudentsService {
-    @Autowired
+@Autowired
 
-    // get the entire students data
-
-    private StudentsDatabaseCollector studentsDB;
-
-    // post the entire students data
     
+     
+    private StudentsDatabaseCollector studentsDB;
+ 
+    /* Get all the students data from the data base */
     public List<Students> getStudents() {
         return studentsDB.findAll();
     }
 
-    // ... existing code ...
-
-public void updateAllStudentData(Long universityNo, Students studentUpdate) {
-    Students existingStudent = studentsDB.findById(universityNo)
-        .orElseThrow(() -> new StudentNotFoundException(universityNo));
-    
-    // Validate required fields
-    if (studentUpdate.getName() == null || studentUpdate.getName().trim().isEmpty()) {
-        throw new IllegalArgumentException("Name cannot be empty");
-    }
-    if (studentUpdate.getRollNo() == null || studentUpdate.getRollNo().trim().isEmpty()) {
-        throw new IllegalArgumentException("Roll No cannot be empty");
-    }
-    
-    // Update fields
-    existingStudent.setName(studentUpdate.getName());
-    existingStudent.setClassName(studentUpdate.getClassName());
-    existingStudent.setRollNo(studentUpdate.getRollNo());
-    existingStudent.setGender(studentUpdate.getGender());
-    existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
-    
-    // Update scores
-    existingStudent.setEasyProblemsSolved(studentUpdate.getEasyProblemsSolved());
-    existingStudent.setMediumProblemsSolved(studentUpdate.getMediumProblemsSolved());
-    existingStudent.setHardProblemsSolved(studentUpdate.getHardProblemsSolved());
-    existingStudent.setLeetcodeScore(studentUpdate.calculateLeetCodeScore());
-    
  
-    
-    studentsDB.save(existingStudent);
-}
-
-// ... existing code ...
-
+    /* Add the particular student in the data base*/
     public void addStudents(Students students) {
-        if (students.getUniversityNo() == null) {
-            throw new IllegalArgumentException("University number cannot be null");
+        try{
+            validateStudent(students);
         }
-        if (students.getName() == null || students.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Student name cannot be empty");
-        }
-        if (students.getRollNo() == null || students.getRollNo().trim().isEmpty()) {
-            throw new IllegalArgumentException("Roll number cannot be empty");
-        }
-        if (students.getClassName() == null || students.getClassName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Class name cannot be empty");
+        catch(Exception e){
+            throw e;
         }
         
         studentsDB.save(students);
     }
-
-    public List<Students> getStudentsWithLeetcode() {
-        return studentsDB.findAll();   
-    }
-
-    public Students getStudentWithLeetcode(Long universityNo) {
-        return studentsDB.findById(universityNo)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
-    }
- 
-         
-    @Transactional
-    public void updateLeetcode(Long universityNo, Students leetcodeUpdate) {
-        Students student = studentsDB.findById(universityNo)
-            .orElseThrow(() -> new StudentNotFoundException(universityNo));
-        
-        if (leetcodeUpdate.getLeetcodeUsername() == null) {
-            throw new IllegalArgumentException("LeetCode username cannot be null");
+    /* Add all the students send in to the request */
+    public void addAllStudents(List<Students> students){
+        List<String> errors = new ArrayList<>();
+        int rowNum = 0;
+        for(Students student : students){
+            rowNum++;
+            try {
+                validateStudent(student);
+                if(studentsDB.existsById(student.getUniversityNo())){
+                    errors.add(String.format("Row %d: Student with University No %d already exists", rowNum, student.getUniversityNo()));
+                }
+            } catch (Exception e) {
+                errors.add(String.format("Row %d: %s", rowNum, e.getMessage()));
+            }
         }
         
-        // Update LeetCode stats
-        student.setLeetcodeUsername(leetcodeUpdate.getLeetcodeUsername());
-        student.setEasyProblemsSolved(leetcodeUpdate.getEasyProblemsSolved());
-        student.setMediumProblemsSolved(leetcodeUpdate.getMediumProblemsSolved());
-        student.setHardProblemsSolved(leetcodeUpdate.getHardProblemsSolved());
         
-        // Calculate and set the LeetCode score
-        student.setLeetcodeScore(student.calculateLeetCodeScore());
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException(String.join("\n", errors));
+        }
         
-        studentsDB.save(student);
+        
+        studentsDB.saveAll(students);
     }
-
+    /* Methos to validate the students data */
+    private void validateStudent(Students student) {
+        List<String> validationErrors = new ArrayList<>();
+    
+        if (student.getUniversityNo() == null) {
+            validationErrors.add("University number cannot be null");
+        }
+    
+        if (student.getName() == null || student.getName().trim().isEmpty()) {
+            validationErrors.add("Name cannot be empty");
+        }
+    
+        if (student.getRollNo() == null || student.getRollNo().trim().isEmpty()) {
+            validationErrors.add("Roll No cannot be empty");
+        }
+    
+        if (student.getClassName() == null || student.getClassName().trim().isEmpty()) {
+            validationErrors.add("Class name cannot be empty");
+        }
+    
+        if (student.getBatch() == null) {
+            validationErrors.add("Batch cannot be null");
+        }
+    
+        if (!validationErrors.isEmpty()) {
+            throw new IllegalArgumentException(String.join(", ", validationErrors));
+        }
+    }
+ 
+ 
+    /* method to update the students data for a particular student */
+    public void updateStudentData(Long universityNo, Students studentUpdate) {
+        Students existingStudent = studentsDB.findById(universityNo)
+            .orElseThrow(() -> new StudentNotFoundException(universityNo));
+        
+        // Validate required fields
+        if (studentUpdate.getName() == null || studentUpdate.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+        if (studentUpdate.getRollNo() == null || studentUpdate.getRollNo().trim().isEmpty()) {
+            throw new IllegalArgumentException("Roll No cannot be empty");
+        }
+        
+        // Update fields
+        existingStudent.setName(studentUpdate.getName());
+        existingStudent.setClassName(studentUpdate.getClassName());
+        existingStudent.setRollNo(studentUpdate.getRollNo());
+        existingStudent.setGender(studentUpdate.getGender());
+        existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
+        existingStudent.setUniversityNo(studentUpdate.getUniversityNo());
+        existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
+        existingStudent.setBatch(studentUpdate.getBatch());
+        
+        studentsDB.save(existingStudent);
+    }
  
 
  
- 
+    /* method that gets the student information by using the university no */
 
     public Students getStudentByUniversityNo(Long universityNo) {
         return studentsDB.findById(universityNo)
             .orElseThrow(() -> new StudentNotFoundException(universityNo));
     }
 
-    public Map<String, Object> getStudentLeetcodeData(Long universityNo) {
-        Students student = getStudentByUniversityNo(universityNo);
-        Map<String, Object> leetcodeData = new HashMap<>();
-        
-        leetcodeData.put("universityNo", student.getUniversityNo());
-        leetcodeData.put("name", student.getName());
-        leetcodeData.put("username", student.getLeetcodeUsername());
-        leetcodeData.put("easyProblemsSolved", student.getEasyProblemsSolved());
-        leetcodeData.put("mediumProblemsSolved", student.getMediumProblemsSolved());
-        leetcodeData.put("hardProblemsSolved", student.getHardProblemsSolved());
-         
-        leetcodeData.put("leetcodeScore", student.getLeetcodeScore());
-        
-        return leetcodeData;
-    }
+ 
 
  
 
