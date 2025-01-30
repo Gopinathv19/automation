@@ -1,7 +1,6 @@
 package vcet.cse.placement.automation.Model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.*;
  
 
@@ -45,6 +44,9 @@ public class Students {
 
     @Column(name = "leetcode_score", nullable = false)
     private Double leetcodeScore = 0.0;
+    @Column(name="batch",nullable =false)
+    private Integer batch;
+
 
 
     // LeetCode score constants
@@ -82,25 +84,8 @@ public class Students {
                (hardProblemsSolved * HARD_PROBLEM_SCORE);
     }
 
-    // Add these fields after other fields
-    @Column(name = "last_updated")
-    private LocalDateTime lastUpdated;
-
-    @PreUpdate
-    @PrePersist
-    public void updateTimestamp() {
-        lastUpdated = LocalDateTime.now();
-    }
-
-    // Add getter and setter
-    public LocalDateTime getLastUpdated() {
-        return lastUpdated;
-    }
-
-    public void setLastUpdated(LocalDateTime lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
-
+ 
+ 
     // Constructors
     public Students() {
 
@@ -188,12 +173,19 @@ public class Students {
     }
 
     public Double getLeetcodeScore() {
-        return leetcodeScore;
+        return calculateLeetCodeScore();
     }
 
     public void setLeetcodeScore(Double leetcodeScore) {
-        this.leetcodeScore = leetcodeScore;
+        this.leetcodeScore =leetcodeScore;
     }
 
+    public void setBatch(Integer batch){
+        this.batch=batch;
+    }
+
+    public  Integer getBatch(){
+        return this.batch;
+    }
  
 }

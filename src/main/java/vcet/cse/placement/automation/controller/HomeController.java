@@ -28,28 +28,49 @@ public class HomeController {
 
     // this method is used to get all the students data in the Admin Page
 
+    @PostMapping("/upload/Student")
+    public ResponseEntity<?> uploadStudents(@RequestBody Students student){
+        try{
+            studentsService.addStudents(student);
+            return ResponseEntity.ok().body("Students where added successfully");
+        }
+        catch(Exception e){
+            return ResponseEntity.badRequest().body("Error uploading the student details");
+        }
+    } 
+    @PostMapping("uploadAll/student")
+    public ResponseEntity<?> uploadAllStudents(@RequestBody List<Students> students){
+        try{
+            studentsService.addAllStudents(students);
+            return ResponseEntity.ok().body("All the students where added");
+        }
+        catch(Exception e){
+            return ResponseEntity.badRequest().body("Error uploading all the students data");
+        }
+    }
 
-    @GetMapping
+
+
+    
+    @GetMapping("getAll/Students")
     public List<Students> getAllStudents() {
         return studentsService.getStudents();
     }
 
     // this method is used to post all the students data in a single short
 
-    @PostMapping("/upload")
-    public void createStudent(@RequestBody Students student) {
-        studentsService.addStudents(student);
-    }
+ 
 
 
-    // the put method is used to update the students data in the Admin Page 
 
-    @PutMapping("/{universityNo}/leetcode")
-    public void updateLeetcodeStats(
-            @PathVariable Long universityNo,
-            @RequestBody Students leetcodeUpdate) {
-        studentsService.updateLeetcode(universityNo, leetcodeUpdate);
-    }
+    // // the put method is used to update the students data in the Admin Page 
+
+    // @PutMapping("/{universityNo}/leetcode")
+    // public void updateLeetcodeStats(
+    //         @PathVariable Long universityNo,
+    //         @RequestBody Students leetcodeUpdate) {
+    //     studentsService.updateLeetcode(universityNo, leetcodeUpdate);
+    // }
 
     @DeleteMapping("/{universityNo}")
     public void deleteStudent(@PathVariable Long universityNo) {
@@ -63,11 +84,11 @@ public class HomeController {
     // ... existing code ...
 
     @PutMapping("/{universityNo}/updateAll")
-    public ResponseEntity<?> updateAllStudentData(
+    public ResponseEntity<?> updateStudentData(
             @PathVariable Long universityNo,
             @RequestBody Students studentUpdate) {
         try {
-            studentsService.updateAllStudentData(universityNo, studentUpdate);
+            studentsService.updateStudentData(universityNo, studentUpdate);
             return ResponseEntity.ok().build();
         } catch (StudentNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -95,24 +116,20 @@ public class HomeController {
         return studentsService.getStudentByUniversityNo(universityNo);
     }
 
-    @GetMapping("/{universityNo}/leetcode")
-    public Map<String, Object> getLeetcodeStats(@PathVariable Long universityNo) {
-        return studentsService.getStudentLeetcodeData(universityNo);
-    }
-
+ 
  
 
  
  
  
  
-    @GetMapping("/analytics/charts")
-    public Map<String, Object> getChartData() {
-        return studentsService.getChartData();
+    @GetMapping("/analytics/charts/{batch}")
+    public Map<String, Object> getChartData(@PathVariable int batch) {
+        return studentsService.getChartData(batch);
     }
-    @GetMapping("/analytics/toppers")
-    public List<Map<String, Object>> getToppers() {
-        return studentsService.getToppers();
+    @GetMapping("/analytics/toppers/{batch}")
+    public List<Map<String, Object>> getToppers(@PathVariable int batch) {
+        return studentsService.getToppers(batch);
     }
 
    // the search endpoint is also used in the admin page to search the students data
@@ -123,13 +140,13 @@ public class HomeController {
     }
  
 
-    @GetMapping("/students/scores/apptitude")
-    public List<Map<String, Object>> getAllStudentScores() {
-        return studentsService.getAllAptitudeScores();
+    @GetMapping("/students/scores/apptitude/{batch}")
+    public List<Map<String, Object>> getAllStudentScores(@PathVariable int batch) {
+        return studentsService.getAllAptitudeScores(batch);
     }
-    @GetMapping("/students/scores/leetcode")
-    public List<Map<String, Object>> getAllLeetcodeScores() {
-        return studentsService.getAllLeetcodeScores();
+    @GetMapping("/students/scores/leetcode/{batch}")
+    public List<Map<String, Object>> getAllLeetcodeScores(@PathVariable int batch   ) {
+        return studentsService.getAllLeetcodeScores(batch);
     }
 
  

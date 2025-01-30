@@ -40,4 +40,51 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
 
     @Query("SELECT s FROM Students s WHERE s.universityNo = :universityNo")
     Students findByUniversityNo(@Param("universityNo") Long universityNo);
+
+    @Query("SELECT s.className, AVG(s.leetcodeScore) FROM Students s WHERE s.batch = :batch GROUP BY s.className")
+    List<Object[]> findAverageLeetcodeScoresByClass(@Param("batch") int batch);
+
+    @Query("SELECT s.className, AVG(sc.score) FROM Students s JOIN s.studentScores sc WHERE s.batch = :batch GROUP BY s.className")
+    List<Object[]> findAverageAptitudeScoresByClass(@Param("batch") int batch);
+
+    @Query("SELECT s FROM Students s WHERE s.batch = :batch AND s.leetcodeScore = " +
+           "(SELECT MAX(s2.leetcodeScore) FROM Students s2 WHERE s2.batch = :batch)")
+    Students findTopLeetcodeStudentByBatch(@Param("batch") int batch);
+
+    @Query("SELECT s FROM Students s WHERE s.batch = :batch AND s.universityNo IN " +
+           "(SELECT ss.student.universityNo FROM StudentScores ss " +
+           "GROUP BY ss.student.universityNo " +
+           "HAVING AVG(ss.score) = " +
+           "(SELECT MAX(avg_score) FROM " +
+           "(SELECT AVG(ss2.score) as avg_score FROM StudentScores ss2 " +
+           "JOIN ss2.student s2 WHERE s2.batch = :batch GROUP BY ss2.student.universityNo) scores))")
+    Students findTopAptitudeStudentByBatch(@Param("batch") int batch);
+
+    @Query("SELECT AVG(ss.score) FROM StudentScores ss WHERE ss.student.universityNo = :universityNo")
+    Double getAverageAptitudeScore(@Param("universityNo") Long universityNo);
+
+    @Query("SELECT new map(" +
+           "s.universityNo as universityNo, " +
+           "s.name as name, " +
+           "s.className as className, " +
+           "s.rollNo as rollNo, " +
+           "(SELECT SUM(sc.score) FROM StudentScores sc WHERE sc.student = s) as totalScore, " +
+           "(SELECT AVG(sc.score) FROM StudentScores sc WHERE sc.student = s) as averageScore) " +
+           "FROM Students s " +
+           "WHERE s.batch = :batch")
+    List<Map<String, Object>> findAllAptitudeScoresByBatch(@Param("batch") int batch);
+
+    @Query("SELECT new map(" +
+           "s.universityNo as universityNo, " +
+           "s.name as name, " +
+           "s.className as className, " +
+           "s.rollNo as rollNo, " +
+           "s.easyProblemsSolved as easyProblemsSolved, " +
+           "s.mediumProblemsSolved as mediumProblemsSolved, " +
+           "s.hardProblemsSolved as hardProblemsSolved, " +
+           "(s.easyProblemsSolved + s.mediumProblemsSolved + s.hardProblemsSolved) as totalProblemsSolved, " +
+           "(s.easyProblemsSolved + s.mediumProblemsSolved * 2 + s.hardProblemsSolved * 3) as leetcodeScore) " +
+           "FROM Students s " +
+           "WHERE s.batch = :batch")
+    List<Map<String, Object>> findAllLeetcodeScoresByBatch(@Param("batch") int batch);
 }
