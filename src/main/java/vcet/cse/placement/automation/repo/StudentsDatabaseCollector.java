@@ -1,6 +1,7 @@
 package vcet.cse.placement.automation.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vcet.cse.placement.automation.Model.Students;
@@ -76,4 +77,30 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
            "FROM Students s " +
            "WHERE s.batch = :batch")
     List<Map<String, Object>> findAllLeetcodeScoresByBatch(@Param("batch") int batch);
+
+    @Modifying
+    @Query("UPDATE Students s SET " +
+           "s.name = :name, " +
+           "s.className = :className, " +
+           "s.rollNo = :rollNo, " +
+           "s.gender = :gender, " +
+           "s.leetcodeUsername = :leetcodeUsername, " +
+           "s.batch = :batch, " +
+           "s.easyProblemsSolved = :easyProblemsSolved, " +
+           "s.mediumProblemsSolved = :mediumProblemsSolved, " +
+           "s.hardProblemsSolved = :hardProblemsSolved " +
+           "WHERE s.universityNo = :universityNo")
+    void updateStudent(
+        @Param("universityNo") Long universityNo,
+        @Param("name") String name,
+        @Param("className") String className,
+        @Param("rollNo") String rollNo,
+        @Param("gender") String gender,
+        @Param("leetcodeUsername") String leetcodeUsername,
+        @Param("batch") Integer batch,
+        @Param("easyProblemsSolved") Integer easyProblemsSolved,
+        @Param("mediumProblemsSolved") Integer mediumProblemsSolved,
+        @Param("hardProblemsSolved") Integer hardProblemsSolved
+    );
+    
 }

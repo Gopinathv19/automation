@@ -1,13 +1,13 @@
 package vcet.cse.placement.automation.controller;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vcet.cse.placement.automation.Model.Students;
 import vcet.cse.placement.automation.service.StudentsService;
 import java.util.List;
+// import vcet.cse.placement.automation.exception.StudentNotFoundException;
 import java.util.Map;
-import vcet.cse.placement.automation.exception.StudentNotFoundException;
- 
 
 
 @RestController
@@ -25,10 +25,8 @@ public class HomeController {
 
 // ************* Admin side  routes **********    
     
-
-    // this method is used to get all the students data in the Admin Page
-
-    @PostMapping("/upload/Student")
+    /* The Method used to upload the single student if guy is not in the database */
+    @PostMapping("/upload")
     public ResponseEntity<?> uploadStudents(@RequestBody Students student){
         try{
             studentsService.addStudents(student);
@@ -38,7 +36,7 @@ public class HomeController {
             return ResponseEntity.badRequest().body("Error uploading the student details");
         }
     } 
-    @PostMapping("uploadAll/student")
+    @PostMapping("uploadAll")
     public ResponseEntity<?> uploadAllStudents(@RequestBody List<Students> students){
         try{
             studentsService.addAllStudents(students);
@@ -48,59 +46,68 @@ public class HomeController {
             return ResponseEntity.badRequest().body("Error uploading all the students data");
         }
     }
-
-
-
+ /* This method is used to get the list of all students in the database */
     
-    @GetMapping("getAll/Students")
+    @GetMapping("getAll")
     public List<Students> getAllStudents() {
         return studentsService.getStudents();
     }
 
-    // this method is used to post all the students data in a single short
+ /* This method is used to get the student by the student id */
+    @GetMapping("get/{studentId}")
+    public Students getStudentById(@PathVariable Long studentId) {
+        return studentsService.getStudentById(studentId);
+    }   
 
- 
+ /* This method is used to delete the student by the student id */
 
-
-
-    // // the put method is used to update the students data in the Admin Page 
-
-    // @PutMapping("/{universityNo}/leetcode")
-    // public void updateLeetcodeStats(
-    //         @PathVariable Long universityNo,
-    //         @RequestBody Students leetcodeUpdate) {
-    //     studentsService.updateLeetcode(universityNo, leetcodeUpdate);
-    // }
-
-    @DeleteMapping("/{universityNo}")
+    @DeleteMapping("delete/{universityNo}")
     public void deleteStudent(@PathVariable Long universityNo) {
         studentsService.deleteStudent(universityNo);
     }
 
+ /* This method is used to update the student data by the student id */
 
-
- 
-
-    // ... existing code ...
-
-    @PutMapping("/{universityNo}/updateAll")
-    public ResponseEntity<?> updateStudentData(
-            @PathVariable Long universityNo,
-            @RequestBody Students studentUpdate) {
+    @PutMapping("/updateAll")
+    public ResponseEntity<?> updateStudentData(@RequestBody List<Students> studentUpdate) {
         try {
-            studentsService.updateStudentData(universityNo, studentUpdate);
-            return ResponseEntity.ok().build();
-        } catch (StudentNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            Map<String, Object> result = studentsService.updateAllStudentData(studentUpdate);
+            
+            // If there were any failures but some updates succeeded
+            @SuppressWarnings("unchecked")
+            List<String> errors = (List<String>) result.get("errors");
+            if (!errors.isEmpty() && (int)result.get("successCount") > 0) {
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .body(result);
+            }
+            
+            // If all updates failed
+            if ((int)result.get("successCount") == 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(result);
+            }
+            
+            // If all updates succeeded
+            return ResponseEntity.ok(result);
+            
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", e.getMessage()));
         }
     }
-
-// ... existing code ...
-
-
-//  ************* End of Admin side routes **********    
+    /* This method is used to update the student details for the particular student */    
+    @PutMapping("/update/{universityNo}")
+    public ResponseEntity<?> updateStudent(@PathVariable Long universityNo, @RequestBody Students student) {
+        try {
+            studentsService.updateStudent(universityNo, student);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) { 
+            return ResponseEntity.internalServerError()                 
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+ 
+ /************* End of Admin side routes ********** /   
 
 
 
@@ -149,6 +156,5 @@ public class HomeController {
         return studentsService.getAllLeetcodeScores(batch);
     }
 
- 
-// ************* End of User side routes **********    
+   /* ************ End of User side routes ********* */   
 }

@@ -27,6 +27,11 @@ public class StudentsService {
         return studentsDB.findAll();
     }
 
+    /* Get the students by the student id */
+
+    public Students getStudentById(Long studentId) {
+        return studentsDB.findById(studentId).orElse(null);
+    }
  
     /* Add the particular student in the data base*/
 
@@ -97,34 +102,93 @@ public class StudentsService {
  
  
     /* method to update the students data for a particular student */
-    
-    public void updateStudentData(Long universityNo, Students studentUpdate) {
-        Students existingStudent = studentsDB.findById(universityNo)
-            .orElseThrow(() -> new StudentNotFoundException(universityNo));
+    @Transactional
+    public Map<String, Object> updateAllStudentData(List<Students> studentsToUpdate) {
+        List<String> errors = new ArrayList<>();
+        List<Students> successfulUpdates = new ArrayList<>();
+        List<Long> failedUniversityNos = new ArrayList<>();
+        int rowNum = 0;
         
-        // Validate required fields
-        if (studentUpdate.getName() == null || studentUpdate.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be empty");
-        }
-        if (studentUpdate.getRollNo() == null || studentUpdate.getRollNo().trim().isEmpty()) {
-            throw new IllegalArgumentException("Roll No cannot be empty");
+        // Process each student update
+        for (Students studentUpdate : studentsToUpdate) {
+            rowNum++;
+            try {
+                // Validate required fields
+                if (studentUpdate.getName() == null || studentUpdate.getName().trim().isEmpty()) {
+                    errors.add(String.format("Row %d: Name cannot be empty for University No %d", 
+                        rowNum, studentUpdate.getUniversityNo()));
+                    failedUniversityNos.add(studentUpdate.getUniversityNo());
+                    continue;
+                }
+                if (studentUpdate.getRollNo() == null || studentUpdate.getRollNo().trim().isEmpty()) {
+                    errors.add(String.format("Row %d: Roll No cannot be empty for University No %d", 
+                        rowNum, studentUpdate.getUniversityNo()));
+                    failedUniversityNos.add(studentUpdate.getUniversityNo());
+                    continue;
+                }
+
+                // Try to update the student
+                if (studentsDB.existsById(studentUpdate.getUniversityNo())) {
+                    studentsDB.updateStudent(
+                        studentUpdate.getUniversityNo(),
+                        studentUpdate.getName(),
+                        studentUpdate.getClassName(),
+                        studentUpdate.getRollNo(),
+                        studentUpdate.getGender(),
+                        studentUpdate.getLeetcodeUsername(),
+                        studentUpdate.getBatch(),
+                        studentUpdate.getEasyProblemsSolved(),
+                        studentUpdate.getMediumProblemsSolved(),
+                        studentUpdate.getHardProblemsSolved()
+                    );
+                    successfulUpdates.add(studentUpdate);
+                } else {
+                    errors.add(String.format("Row %d: Student with University No %d not found", 
+                        rowNum, studentUpdate.getUniversityNo()));
+                    failedUniversityNos.add(studentUpdate.getUniversityNo());
+                }
+            } catch (Exception e) {
+                errors.add(String.format("Row %d: Error updating University No %d - %s", 
+                    rowNum, studentUpdate.getUniversityNo(), e.getMessage()));
+                failedUniversityNos.add(studentUpdate.getUniversityNo());
+            }
         }
         
-        // Update fields
-        existingStudent.setName(studentUpdate.getName());
-        existingStudent.setClassName(studentUpdate.getClassName());
-        existingStudent.setRollNo(studentUpdate.getRollNo());
-        existingStudent.setGender(studentUpdate.getGender());
-        existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
-        existingStudent.setUniversityNo(studentUpdate.getUniversityNo());
-        existingStudent.setLeetcodeUsername(studentUpdate.getLeetcodeUsername());
-        existingStudent.setBatch(studentUpdate.getBatch());
-        studentsDB.save(existingStudent);
+        // Return results
+        Map<String, Object> result = new HashMap<>();
+        result.put("successCount", successfulUpdates.size());
+        result.put("failureCount", failedUniversityNos.size());
+        result.put("successfulUpdates", successfulUpdates);
+        result.put("failedUniversityNos", failedUniversityNos);
+        result.put("errors", errors);
+        
+        return result;
     }
  
 
+    /* method to update the student data for a particular student */
+    @Transactional
+    public void updateStudent(Long universityNo, Students student) {
+        if (!studentsDB.existsById(universityNo)) {
+            throw new StudentNotFoundException(universityNo);
+        }
+        studentsDB.updateStudent(
+            universityNo,
+            student.getName(),
+            student.getClassName(),
+            student.getRollNo(),
+            student.getGender(),
+            student.getLeetcodeUsername(),
+            student.getBatch(),
+            student.getEasyProblemsSolved(),
+            student.getMediumProblemsSolved(),
+            student.getHardProblemsSolved()
+        );
+    }
+
  
     /* method that gets the student information by using the university no */
+
 
     public Students getStudentByUniversityNo(Long universityNo) {
         return studentsDB.findById(universityNo)
