@@ -106,7 +106,29 @@ public class HomeController {
                 .body(Map.of("error", e.getMessage()));
         }
     }
+
+    /* This method is used to update the student score */           
+    @PutMapping("updateTestScore/{universityNo}/{scores}/{testName}")
+    public ResponseEntity<?> updateStudentScore(
+            @PathVariable Long universityNo,
+            @PathVariable String testName,
+            @RequestBody Double score) {            
+        try {
+            studentsService.updateStudentScore(universityNo, testName, score);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", e.getMessage())); 
+        }
+    }
  
+
+
+
+
+
+
+
  /************* End of Admin side routes ********** /   
 
 

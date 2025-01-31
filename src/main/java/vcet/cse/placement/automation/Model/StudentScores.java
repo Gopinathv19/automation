@@ -23,9 +23,9 @@ public class StudentScores {
     @Column(name="score")
     private Double score;
 
-    StudentScores(){}
+    public StudentScores(){}
 
-    StudentScores(Students student,String testName,Double score){
+    public StudentScores(Students student, String testName, Double score){
         this.student=student;
         this.testName=testName;
         this.score=score;

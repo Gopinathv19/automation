@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+ 
 
  
 
@@ -348,6 +349,30 @@ public class StudentsService {
             throw new StudentNotFoundException(universityNo);
         }
         studentsDB.deleteById(universityNo);
+    }
+
+    /* Method to update the student score */
+    
+    @Transactional
+    public void updateStudentScore(Long universityNo, String testName, Double newScore) {
+        Students student = studentsDB.findById(universityNo)
+            .orElseThrow(() -> new StudentNotFoundException(universityNo));
+        
+        // Find if test score already exists
+        Optional<StudentScores> existingScore = student.getStudentScores().stream()
+            .filter(score -> score.getTestName().equals(testName))
+            .findFirst();
+        
+        if (existingScore.isPresent()) {
+            // Update existing score
+            existingScore.get().setScore(newScore);
+        } else {
+            // Add new score
+            StudentScores newStudentScore = new StudentScores(student, testName, newScore);
+            student.getStudentScores().add(newStudentScore);
+        }
+        
+        studentsDB.save(student);
     }
 }
 
