@@ -103,4 +103,12 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
         @Param("hardProblemsSolved") Integer hardProblemsSolved
     );
     
+    @Modifying
+    @Query("UPDATE StudentScores ss SET ss.score = :score " +
+           "WHERE ss.student.universityNo = :universityNo AND ss.testName = :testName")
+    int updateStudentTestScore(
+        @Param("universityNo") Long universityNo,
+        @Param("testName") String testName,
+        @Param("score") Double score
+    );
 }

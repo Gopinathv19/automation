@@ -65,6 +65,7 @@ public class Students {
         studentScore.setStudent(this);
         studentScore.setTestName(testName);
         studentScore.setScore(score);
+        studentScores.add(studentScore);
     }
     public List<StudentScores> getStudentScores(){
         return studentScores;
