@@ -19,32 +19,19 @@ private  HomeService homeService;
 
 /*   This end points is used to get the eligibility of the students  */
 
-@RequestMapping("/eligibility")
-public ResponseEntity<?> getEligibility(){
+
+@GetMapping("/search")
+public ResponseEntity<?> searchStudents(@RequestParam ("q") String query){
     try{
-        return ResponseEntity.ok().body(homeService.getEligibility());
+        return ResponseEntity.ok().body(homeService.searchStudents(query));
     }
-    catch(Exception e){
-        return ResponseEntity.badRequest().body("Error getting the eligibility");
+    catch (Exception e){
+        return  ResponseEntity.badRequest().body("Unable to get the student:"+query);
     }
 }
 
-/* This end points is used to get the gender score of the batch */
 
-@RequestMapping("/genderScore")
-public ResponseEntity<?> getGenderScore(){
-    try{
-        return ResponseEntity.ok().body(homeService.getGenderScore());
-    }
-    catch(Exception e){
-        return ResponseEntity.badRequest().body("Error getting the gender score");
-    }
-}
-
-                
-/* This end point is used to get the chart data of the batch*/
-
-@RequestMapping("/getChartData/{batch}")
+@RequestMapping("/charts/{batch}")
 Map<String,Object> getChartData(@PathVariable int batch){
    return homeService.getChartData(batch);
 }
@@ -66,23 +53,14 @@ ResponseEntity<?> getToppersOfTheBatch(@PathVariable int batch){
 
 /* this end point is get the students list of apptitude scores */
 
-@RequestMapping("/getStudent/ApptitudeScores/{batch}")
 
-ResponseEntity<?> getStudentApptitudeScores(@PathVariable int batch){
-    try{
-        return ResponseEntity.ok().body(homeService.getAllAptitudeScores(batch));
-    }
-    catch(Exception e){
-        return ResponseEntity.badRequest().body("Error getting the student apptitude scores");
-    }
-}
 
 /* this end point is used to get the students leetcode scores */
 @RequestMapping("/getStudent/LeetCodeScores/{batch}")
 
 ResponseEntity<?> getStudentLeetCodeScores(@PathVariable int batch){
     try{
-        return ResponseEntity.ok().body(homeService.getAllAptitudeScores(batch));
+        return ResponseEntity.ok().body(homeService.getAllLeetcodeScores(batch));
     }
     catch(Exception e){
         return ResponseEntity.badRequest().body("Error getting the student leetcode scores");

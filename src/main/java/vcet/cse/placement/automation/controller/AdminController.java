@@ -75,6 +75,8 @@ public class AdminController {
 
             // If there were any failures but some updates succeeded
             @SuppressWarnings("unchecked")
+
+
             List<String> errors = (List<String>) result.get("errors");
             if (!errors.isEmpty() && (int)result.get("successCount") > 0) {
                 return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
@@ -102,37 +104,6 @@ public class AdminController {
         try {
             studentsService.updateStudent(universityNo, student);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /* This method is used to update the student score */
-    @PutMapping("/updateTestScore/{universityNo}/{testName}/{score}")
-    public ResponseEntity<?> updateStudentScore(
-            @PathVariable Long universityNo,
-            @PathVariable String testName,
-            @PathVariable double score) {
-        try {
-            Map<String, Object> result = studentsService.updateStudentScore(universityNo, testName, score);
-
-            if (result.containsKey("error")) {
-                return ResponseEntity.badRequest().body(result);
-            }
-
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @GetMapping("/scores/{universityNo}")
-    public ResponseEntity<?> getStudentScores(@PathVariable Long universityNo) {
-        try {
-            Map<String, Object> scores = studentsService.getStudentScores(universityNo);
-            return ResponseEntity.ok(scores);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", e.getMessage()));

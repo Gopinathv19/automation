@@ -23,8 +23,8 @@ private StudentsDatabaseCollector studentsDB;
 
     /* Get the students by the student id */
 
-    public Students getStudentById(Long studentId) {
-        return studentsDB.findById(studentId).orElse(null);
+    public Students getStudentById(Long universityNo) {
+        return studentsDB.findById(universityNo).orElse(null);
     }
  
     /* Add the particular student in the data base*/
@@ -105,25 +105,9 @@ private StudentsDatabaseCollector studentsDB;
         List<Long> failedUniversityNos = new ArrayList<>();
         int rowNum = 0;
         
-        // Process each student update
         for (Students studentUpdate : studentsToUpdate) {
             rowNum++;
             try {
-                // Validate required fields
-                if (studentUpdate.getName() == null || studentUpdate.getName().trim().isEmpty()) {
-                    errors.add(String.format("Row %d: Name cannot be empty for University No %d", 
-                        rowNum, studentUpdate.getUniversityNo()));
-                    failedUniversityNos.add(studentUpdate.getUniversityNo());
-                    continue;
-                }
-                if (studentUpdate.getRollNo() == null || studentUpdate.getRollNo().trim().isEmpty()) {
-                    errors.add(String.format("Row %d: Roll No cannot be empty for University No %d", 
-                        rowNum, studentUpdate.getUniversityNo()));
-                    failedUniversityNos.add(studentUpdate.getUniversityNo());
-                    continue;
-                }
-
-                // Try to update the student
                 if (studentsDB.existsById(studentUpdate.getUniversityNo())) {
                     studentsDB.updateStudent(
                         studentUpdate.getUniversityNo(),
@@ -149,10 +133,7 @@ private StudentsDatabaseCollector studentsDB;
                 failedUniversityNos.add(studentUpdate.getUniversityNo());
             }
         }
-
-
         
-        // Return results
         Map<String, Object> result = new HashMap<>();
         result.put("successCount", successfulUpdates.size());
         result.put("failureCount", failedUniversityNos.size());
@@ -219,59 +200,8 @@ private StudentsDatabaseCollector studentsDB;
 
     /* Method to update the student score */
     
-    @Transactional
-    public Map<String, Object> updateStudentScore(Long universityNo, String testName, Double score) {
-        // Validate inputs
-        if (testName == null || testName.trim().isEmpty()) {
-            return Map.of("error", "Test name cannot be empty");
-        }
-        if (score == null) {
-            return Map.of("error", "Score cannot be null");
-        }
 
-        // Check if student exists
-        Students student = studentsDB.findById(universityNo)
-            .orElseThrow(() -> new StudentNotFoundException(universityNo));
 
-        try {
-            // Try to update existing score
-            int updatedRows = studentsDB.updateStudentTestScore(universityNo, testName, score);
-            
-            if (updatedRows == 0) {
-                // If no existing score found, create new one
-                student.addTestScore(testName, score);
-                studentsDB.save(student);
-            }
 
-            return Map.of(
-                "message", "Score updated successfully",
-                "universityNo", universityNo,
-                "testName", testName,
-                "score", score
-            );
-
-        } catch (Exception e) {
-            return Map.of("error", "Failed to update score: " + e.getMessage());
-        }
-    }
-
-    /* Method to get the student scores */
-
-    public Map<String, Object> getStudentScores(Long universityNo) {
-        Students student = studentsDB.findById(universityNo)
-            .orElseThrow(() -> new StudentNotFoundException(universityNo));
-            
-        Map<String, Object> result = new HashMap<>();
-        result.put("universityNo", student.getUniversityNo());
-        result.put("name", student.getName());
-        result.put("scores", student.getStudentScores().stream()
-            .map(score -> Map.of(
-                "testName", score.getTestName(),
-                "score", score.getScore()
-            ))
-            .collect(Collectors.toList()));
-            
-        return result;
-    }
 }
 
