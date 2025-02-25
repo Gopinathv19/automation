@@ -1,13 +1,16 @@
 package vcet.cse.placement.automation.Model;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 import java.util.*;
- 
+
 
 @Entity
 @Table(name = "students")
 public class Students {
-    
+
     @Id
     @NotNull
     @Column(name = "university_no", unique = true)
@@ -32,7 +35,7 @@ public class Students {
     // LeetCode fields
     @Column(name = "leetcode_username", length = 50)
     private String leetcodeUsername;
-    
+
     @Column(name = "easy_solved", nullable = false)
     private Integer easyProblemsSolved = 0;
 
@@ -56,21 +59,25 @@ public class Students {
 
     // aptitude_test_scores
 
-    @OneToMany(mappedBy ="student",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY)
-    private List<StudentScores> studentScores=new ArrayList<>();
- 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<LeetCodeWeeklyHistory> weeklyHistory = new ArrayList<>();
 
-    public void addTestScore(String testName, Double score) {
-        StudentScores studentScore = new StudentScores(this, testName, score);
-        studentScore.setStudent(this);
-        studentScore.setTestName(testName);
-        studentScore.setScore(score);
-    }
-    public List<StudentScores> getStudentScores(){
-        return studentScores;
+    public List<LeetCodeWeeklyHistory> getWeeklyHistory() {
+        return weeklyHistory;
     }
 
-  
+    public void setWeeklyHistory(List<LeetCodeWeeklyHistory> weeklyHistory) {
+        this.weeklyHistory = weeklyHistory;
+    }
+
+    public void addWeeklyHistory(Integer easy, Integer medium, Integer hard, Double score) {
+        LeetCodeWeeklyHistory history = new LeetCodeWeeklyHistory(this, easy, medium, hard, score, LocalDate.now());
+        weeklyHistory.add(history);
+    }
+
+
+
 
     @Transient
     public Integer getTotalProblemsSolved() {
@@ -84,8 +91,8 @@ public class Students {
                (hardProblemsSolved * HARD_PROBLEM_SCORE);
     }
 
- 
- 
+
+
     // Constructors
     public Students() {
 
@@ -187,5 +194,4 @@ public class Students {
     public  Integer getBatch(){
         return this.batch;
     }
- 
 }
