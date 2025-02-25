@@ -37,7 +37,13 @@ public class LeetCodeController {
     @Autowired
     private LeetCodeSchedulerService leetCodeService;
     
+    // Manual endpoint
     @GetMapping("/update")
+    public ResponseEntity<String> updateLeetCodeStats() {
+        return updateStats();
+    }
+
+    // Shared method used by both manual endpoint and scheduler
     public ResponseEntity<String> updateStats() {
         log.info("Received request to update LeetCode stats");
         try {
