@@ -84,7 +84,7 @@ public class LeetCodeSchedulerService {
             JsonNode root = mapper.readTree(response);
             
             Map<String, Integer> results = new HashMap<>();
-            results.put("easySolved", root.path("eassySolved").asInt());
+            results.put("easySolved", root.path("easySolved").asInt());
             results.put("mediumSolved", root.path("mediumSolved").asInt());
             results.put("hardSolved", root.path("hardSolved").asInt());
             

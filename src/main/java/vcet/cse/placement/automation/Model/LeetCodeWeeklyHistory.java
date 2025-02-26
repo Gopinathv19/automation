@@ -40,7 +40,7 @@ public class LeetCodeWeeklyHistory {
     public LeetCodeWeeklyHistory() {}
 
     // Constructor with Parameters
-    public LeetCodeWeeklyHistory(Students student, Integer easySolved, Integer mediumSolved, Integer hardSolved, Double leetcodeScore, LocalDate weeklyDate) {
+    public LeetCodeWeeklyHistory(Students student, Integer easySolved, Integer mediumSolved, Integer hardSolved, LocalDate weeklyDate,Double leetcode_score) {
         this.student = student;
         this.easySolved = easySolved;
         this.mediumSolved = mediumSolved;

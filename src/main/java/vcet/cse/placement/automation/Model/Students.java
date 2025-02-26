@@ -54,8 +54,8 @@ public class Students {
 
     // LeetCode score constants
         private static final double EASY_PROBLEM_SCORE = 10.0;
-        private static final double MEDIUM_PROBLEM_SCORE = 50.0;
-        private static final double HARD_PROBLEM_SCORE = 100.0;
+        private static final double MEDIUM_PROBLEM_SCORE = 60.0;
+        private static final double HARD_PROBLEM_SCORE = 40.0;
 
     // aptitude_test_scores
 
@@ -71,8 +71,8 @@ public class Students {
         this.weeklyHistory = weeklyHistory;
     }
 
-    public void addWeeklyHistory(Integer easy, Integer medium, Integer hard, Double score) {
-        LeetCodeWeeklyHistory history = new LeetCodeWeeklyHistory(this, easy, medium, hard, score, LocalDate.now());
+    public void addWeeklyHistory(Integer easy, Integer medium, Integer hard, Double leetcode_score) {
+        LeetCodeWeeklyHistory history = new LeetCodeWeeklyHistory(this, easy, medium, hard, LocalDate.now(),leetcode_score);
         weeklyHistory.add(history);
     }
 

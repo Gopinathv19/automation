@@ -106,3 +106,5 @@ public interface StudentsDatabaseCollector extends JpaRepository<Students, Long>
     // Find students by LeetCode username
     List<Students> findByLeetcodeUsername(String leetcodeUsername);
 }
+
+
