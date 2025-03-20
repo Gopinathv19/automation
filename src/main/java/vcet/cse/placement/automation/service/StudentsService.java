@@ -7,9 +7,9 @@ import vcet.cse.placement.automation.exception.StudentNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.CrossOrigin;
+ 
 
-@CrossOrigin
+ 
 @Service
 public class StudentsService {
 @Autowired
@@ -197,10 +197,6 @@ private StudentsDatabaseCollector studentsDB;
         }
         studentsDB.deleteById(universityNo);
     }
-
-    /* Method to update the student score */
-    
-
 
 
 }
